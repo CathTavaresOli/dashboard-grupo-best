@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Financeiro - Grupo BEST</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#1e40af',
+                        'primary-dark': '#1e3a8a',
+                        'secondary': '#3b82f6',
+                        'accent': '#f97316',
+                        'accent-light': '#fb923c',
+                        'accent-dark': '#ea580c',
+                        'positive': '#22c55e',
+                        'negative': '#ef4444',
+                        'light-bg': '#f8fafc',
+                        'text-dark': '#1e293b',
+                        'text-light': '#64748b'
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+    </script>
+    <style>
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-light-bg dark:bg-gray-900 transition-colors duration-300">
+    <!-- Layout Principal -->
+    <div class="flex h-screen bg-light-bg dark:bg-gray-900">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gradient-to-b from-primary to-primary-dark dark:bg-gray-800 text-white shadow-lg">
+            <!-- Logo Header -->
+            <div class="p-6 border-b border-accent dark:border-gray-700">
+                <div class="flex items-center">
+                    <div class="mr-4 flex items-center justify-center" style="width: 80px; height: 80px;">
+                        <div class="w-16 h-16 bg-orange-500 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">LDA</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">LDA CONTABIL</h2>
+                        <p class="text-xs text-orange-200">Dashboard Financeiro</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Menu Principal -->
+            <nav class="flex-1 p-4">
+                <div class="space-y-2">
+                    <div>
+                        <div class="flex items-center p-3 text-white bg-gradient-to-r from-accent to-accent-dark rounded-lg shadow-md">
+                            <div class="flex items-center">
+                                <i class="fas fa-chart-line mr-3 text-white"></i>
+                                <span class="font-medium">Dashboard Financeiro</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Sub-menus -->
+                        <div class="ml-6 mt-2 space-y-1">
+                            <button class="menu-item active w-full text-left p-2 text-orange-200 hover:text-white hover:bg-accent-light rounded transition-colors" data-tab="consolidado">
+                                <i class="fas fa-chart-bar mr-2 text-sm"></i>
+                                Consolidado
+                            </button>
+                            <button class="menu-item w-full text-left p-2 text-orange-200 hover:text-white hover:bg-accent-light rounded transition-colors" data-tab="best">
+                                <i class="fas fa-shield-alt mr-2 text-sm"></i>
+                                BEST Vigilância
+                            </button>
+                            <button class="menu-item w-full text-left p-2 text-orange-200 hover:text-white hover:bg-accent-light rounded transition-colors" data-tab="diamante">
+                                <i class="fas fa-gem mr-2 text-sm"></i>
+                                Diamante Serviços
+                            </button>
+                            <button class="menu-item w-full text-left p-2 text-orange-200 hover:text-white hover:bg-accent-light rounded transition-colors" data-tab="comparative">
+                                <i class="fas fa-balance-scale mr-2 text-sm"></i>
+                                Comparativo
+                            </button>
+                            <button class="menu-item w-full text-left p-2 text-orange-200 hover:text-white hover:bg-accent-light rounded transition-colors" data-tab="patrimonio">
+                                <i class="fas fa-building mr-2 text-sm"></i>
+                                Patrimônio
+                            </button>
+                            <button class="menu-item w-full text-left p-2 text-orange-200 hover:text-white hover:bg-accent-light rounded transition-colors" data-tab="observacoes">
+                                <i class="fas fa-lightbulb mr-2 text-sm"></i>
+                                Observações
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Área Principal -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header Superior -->
+            <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">GRUPO BEST</h1>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Dashboard Financeiro - DRE 2024</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <button id="themeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                            <i class="fas fa-moon dark:hidden"></i>
+                            <i class="fas fa-sun hidden dark:inline"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Conteúdo Principal -->
+            <main class="flex-1 overflow-auto p-6">
+                <!-- Dashboard Content -->
+                <div id="dashboardContent">
+                    <!-- Consolidado -->
+                    <div id="consolidado" class="tab-content">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <!-- KPI Cards -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 card-hover border-l-4 border-primary">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-gray-500 dark:text-gray-400 text-sm">Receita Bruta</p>
+                                        <p class="text-2xl font-bold text-text-dark dark:text-white">R$ 86.113.719</p>
+                                        <span class="text-primary text-sm flex items-center mt-1">
+                                            <i class="fas fa-building mr-1"></i> Grupo
+                                        </span>
+                                    </div>
+                                    <div class="bg-blue-100 dark:bg-blue-900 p-3 rounded-full">
+                                        <i class="fas fa-chart-line text-primary text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 card-hover border-l-4 border-negative">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-gray-500 dark:text-gray-400 text-sm">Despesas c/ Pessoal</p>
+                                        <p class="text-2xl font-bold text-text-dark dark:text-white">R$ 76.083.776</p>
+                                        <span class="text-negative text-sm flex items-center mt-1">
+                                            <i class="fas fa-users mr-1"></i> 88,3%
+                                        </span>
+                                    </div>
+                                    <div class="bg-red-100 dark:bg-red-900 p-3 rounded-full">
+                                        <i class="fas fa-users text-negative text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 card-hover border-l-4 border-accent">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-gray-500 dark:text-gray-400 text-sm">Impostos</p>
+                                        <p class="text-2xl font-bold text-text-dark dark:text-white">R$ 7.491.831</p>
+                                        <span class="text-accent text-sm flex items-center mt-1">
+                                            <i class="fas fa-percent mr-1"></i> 8,7%
+                                        </span>
+                                    </div>
+                                    <div class="bg-orange-100 dark:bg-orange-900 p-3 rounded-full">
+                                        <i class="fas fa-receipt text-accent text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 card-hover border-l-4 border-negative">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-gray-500 dark:text-gray-400 text-sm">Resultado Líquido</p>
+                                        <p class="text-2xl font-bold text-negative dark:text-red-400">-R$ 1.463.586</p>
+                                        <span class="text-negative text-sm flex items-center mt-1">
+                                            <i class="fas fa-arrow-down mr-1"></i> Prejuízo
+                                        </span>
+                                    </div>
+                                    <div class="bg-red-100 dark:bg-red-900 p-3 rounded-full">
+                                        <i class="fas fa-exclamation-triangle text-negative text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gráficos -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                                <h3 class="text-xl font-bold text-text-dark dark:text-white mb-4">Evolução da Receita</h3>
+                                <div class="chart-container">
+                                    <canvas id="revenueChart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                                <h3 class="text-xl font-bold text-text-dark dark:text-white mb-4">Composição de Despesas</h3>
+                                <div class="chart-container">
+                                    <canvas id="expensesChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Tema
+        function initTheme() {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            }
+        }
+
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
+
+        // Navegação
+        function initTabs() {
+            const menuItems = document.querySelectorAll('.menu-item');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            menuItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const target = item.dataset.tab;
+                    
+                    menuItems.forEach(m => {
+                        m.classList.remove('active', 'bg-accent-light', 'text-white');
+                        m.classList.add('text-orange-200');
+                    });
+                    
+                    item.classList.add('active', 'bg-accent-light', 'text-white');
+                    item.classList.remove('text-orange-200');
+                    
+                    tabContents.forEach(content => {
+                        content.classList.add('hidden');
+                    });
+                    
+                    document.getElementById(target).classList.remove('hidden');
+                });
+            });
+        }
+
+        // Gráficos
+        function initCharts() {
+            // Gráfico de receita
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['BEST Vigilância', 'Diamante Serviços', 'Total Grupo'],
+                    datasets: [{
+                        label: 'Receita Bruta (R$ milhões)',
+                        data: [80.48, 5.64, 86.11],
+                        backgroundColor: ['#003049', '#0077b6', '#00b4d8'],
+                        borderWidth: 2,
+                        borderColor: '#003049'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Gráfico de despesas
+            const expensesCtx = document.getElementById('expensesChart').getContext('2d');
+            new Chart(expensesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pessoal (88.3%)', 'Administrativas (3.8%)', 'Impostos (8.7%)', 'Financeiras (1.6%)'],
+                    datasets: [{
+                        data: [76083776, 3276567, 7491831, 1360260],
+                        backgroundColor: ['#ef4444', '#f77f00', '#6c757d', '#22c55e'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            initTabs();
+            initCharts();
+        });
+    </script>
+</body>
+</html>
